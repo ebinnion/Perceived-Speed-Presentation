@@ -35,7 +35,7 @@ function onDeviceReady() {
 					}
 
 					// Set the event handler for de/registering
-					$( '.cw-register-push' ).change(
+					$( '.register-push' ).change(
 						function( e ) {
 							state = $( this ).is( ':checked' );
 							target = $( this ).attr( 'data-site' );
