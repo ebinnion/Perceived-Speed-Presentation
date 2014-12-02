@@ -21,7 +21,9 @@ function register_device() {
 		$sport_devices = array( $device );
 	}
 
-	$udpated = update_blog_option( $blog_id, 'registered_devices', $sport_devices );
+	if ( update_blog_option( $blog_id, 'registered_devices', $sport_devices ) ) {
+		wp_die( 'Registering device failed.' );
+	}
 
 	exit;
 }
@@ -48,7 +50,9 @@ function deregister_device() {
 		}
 	}
 
-	$udpated = update_blog_option( $blog_id, 'registered_devices', $sport_devices );
+	if ( update_blog_option( $blog_id, 'registered_devices', $sport_devices ) ) {
+		wp_die( 'Deregistering device failed.' );
+	}
 
 	exit;
 }

@@ -9,9 +9,7 @@ function register_device_all_blogs() {
 		function(response){
 		//	alert('The server responded: ' + response);
 		}
-	).always(function() {
-	//	alert( 'ajax finished' );
-	});
+	);
 }
 
 // This function will fire after Phonegap has loaded.
@@ -54,18 +52,16 @@ function onDeviceReady() {
 									function( response ){
 										console.log( response );
 									}
-								);
+								).fail( function( xhr, textStatus, errorThrown ) {
+
+									// If the Ajax fails, then handle it
+									alert( xhr.responseText );
+								});
 							}
 						}
 					);
 				}, 'json'
-			).always( function() {
-				// alert( 'ajax finished' );
-			}).fail( function( xhr, textStatus, errorThrown ){
-				// alert(textStatus + ' : ' + errorThrown);
-			});
-		} else {
-			console.log( 'no DEVICE object found' );
+			);
 		}
 	});
 }
