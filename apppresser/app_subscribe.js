@@ -1,17 +1,3 @@
-function register_device_all_blogs() {
-	console.log( "register_device_all_blogs: " + device.uuid);
-	jQuery.post(
-		apppCore.ajaxurl,
-		{
-			'action': 'register_device_all_blogs',
-			'uuid':   device.uuid
-		},
-		function(response){
-		//	alert('The server responded: ' + response);
-		}
-	);
-}
-
 // This function will fire after Phonegap has loaded.
 function onDeviceReady() {
 

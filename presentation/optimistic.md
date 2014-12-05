@@ -1,6 +1,6 @@
 ![110%](Screen Shot 2014-10-05 at 8.55.37 PM.png)
 
-# Perceived Speed and Optimization
+## Perceived Speed and Optimization
 
 ### Eric Binnion
 
@@ -25,8 +25,8 @@ BA in Computer Science at MSU
 # Overview of this Session
 
 - What is perceived speed?
-- Why is it so important?
 - Examples
+- Why is it so important?
 - Implementation
 - Questions?
 
@@ -83,35 +83,41 @@ BA in Computer Science at MSU
 
 ---
 
-# How do I Increase Perceived Speed?
+## How do I Increase Perceived Speed?
 
 ---
 
-# Optimistic Interfaces
+# [fit] Optimistic Interfaces
 
 ## **A method of improving** perceived speed **of applications by** assuming **that interactions with the server will succeed.**
 
 ---
 
-# Assume Success
+![autoplay right loop fit](o2_new_post.mov)
 
-```javascript
-this.$el.slideUp( this.destroyViewModel( this, postId ) );
-```
+# [fit] Assume Success
 
 - Emulate while waiting
 - Makes use of:
-	- JavaScript
-	- AJAX
-	- Backbone, React, etc.
+  - AJAX
+  - Backbone, React, etc.
+
+---
+
+# But, Check Success
+
+- How do we check that a request succeeded?
+- How do we display failures?
+- How do we recover?
+  - Do we automatically retry?
 
 ---
 
 # Examples
 
 - JetPack
-- O2
 - ROHO Sports / AppPresser
+- O2
 
 ---
 
@@ -130,11 +136,223 @@ this.$el.slideUp( this.destroyViewModel( this, postId ) );
 
 ---
 
-![autoplay](o2_trash_post.mov)
+# [fit] Subscribe AJAX Example (PHP)
+
+```php
+add_action( 'wp_ajax_nopriv_register_device', 'register_device' );
+add_action( 'wp_ajax_register_device', 'register_device' );
+function register_device() {
+	$blog_id = $_POST['blog_id'];
+	$device  = $_POST['uuid'];
+
+	$sport_devices = get_blog_option( $blog_id, 'registered_devices' );
+
+	if ( is_array( $sport_devices ) ) {
+		if ( ! in_array( $device, $sport_devices ) ) {
+			$sport_devices[] = $device;
+		}
+	} else {
+		$sport_devices = array( $device );
+	}
+
+	if ( ! update_blog_option( $blog_id, 'registered_devices', $sport_devices ) ) {
+		wp_die( 'Registering device failed.' );
+	}
+
+	exit;
+}
+```
 
 ---
 
-![autoplay](o2_trash_comment.mov)
+# [fit] Subscribe AJAX Example (JS)
+
+```javascript
+$( '.register-push' ).change(
+	function( e ) {
+		state = $( this ).is( ':checked' );
+		target = $( this ).attr( 'data-site' );
+		if ( 'undefined' !== typeof device && null !== device.uuid ) {
+			var action = ( false == state ) ? 'deregister_device' : 'register_device';
+
+			jQuery.post(
+				apppCore.ajaxurl,
+				{
+					'action':  action,
+					'uuid':    device.uuid,
+					'blog_id': target
+				},
+				function( response ){
+					console.log( response );
+				}
+			).fail( function( xhr, textStatus, errorThrown ) {
+
+				// If the Ajax fails, then handle it
+				alert( xhr.responseText );
+			});
+		}
+	}
+);
+```
+
+---
+
+![right fit autoplay loop](o2_trash_post.mov)
+
+# O2 Trash Post
+
+- slideUp Post (hide)
+- Attempy to destroy/delete post
+- If successful, remove post from DOM
+- Else, slideDown post and show notice
+
+---
+
+# O2 Trash Post
+
+```javascript
+onTrash: function( event ) {
+	event.preventDefault();
+	event.stopPropagation();
+
+	var postId = parseInt( o2.options.postId, 10 );
+
+	if ( 0 == postId ) {
+
+		// If currently on a list view, slide the post up then proceed with the destroy.
+		this.$el.slideUp( this.destroyViewModel( this, postId ) );
+	} else {
+
+		// Check if there is a postTrashedFailed notification and remove if so
+		o2.Notifications.notifications.findFirstAndDestroy( 'postTrashedFailed' );
+
+		var trashString = ( 'page' == o2.options.viewType ) ? 'pageBeingTrashed' : 'postBeingTrashed';
+
+		o2.Notifications.add( {
+			text: o2.strings.trashString,
+			url: false,
+			type: 'postBeingTrashed',
+			sticky: false,
+			popup: false,
+			dismissable: true
+		} );
+
+		this.destroyViewModel( this, postId );
+	}
+},
+```
+
+---
+
+# O2 Trash Post
+
+```javascript
+destroyViewModel: function( view, postId ) {
+view.model.destroy({
+	wait: true,
+	success: function( model, response ) {
+		// Commented out for presentation
+	},
+	error: function( model, response ) {
+
+		// Remove any actions menus that are currently open.
+		view.closeOpenDisclosures();
+
+		// Check if there is a postBeingTrashed notification and remove if so
+		o2.Notifications.notifications.findFirstAndDestroy( 'postBeingTrashed' );
+
+		var trashFailedString = ( 'page' == o2.options.viewType ) ? 'pageTrashedFailed' : 'postTrashedFailed';
+
+		// If the destroy failed, show the post again.
+		view.$el.slideDown();
+		o2.Notifications.add( {
+			text: o2.strings.trashFailedString,
+			url: false,
+			type: 'postTrashedFailed',
+			sticky: false,
+			popup: true,
+			dismissable: true
+		} );
+	}
+});
+},
+```
+
+---
+
+![right fit autoplay loop](o2_trash_comment.mov)
+
+# [fit] O2 Trash Comment
+
+- Change comment content
+- If successful, do nothing
+- Else, change comment content back
+
+---
+
+# O2 Trash Comment
+
+```javascript
+onTrash: function( event ) {
+	event.preventDefault();
+	event.stopImmediatePropagation();
+
+	this.options.isSaving = true;
+	this.options.isTrashedAction = true;
+
+	o2.Events.dispatcher.trigger( 'notify-app.o2', { saveInProgress: true } );
+
+	var updates = {
+		isTrashed:      true,
+		trashedSession: true
+	};
+
+	this.model.save( updates, { success: this.onSaveSuccess,error: this.onSaveError } );
+},
+````
+
+---
+
+#O2 Trash Comment
+
+```javascript
+onSaveError: function( model, xhr ) {
+	o2.Events.dispatcher.trigger( 'notify-app.o2', { saveInProgress: false } );
+
+	var responseText = '';
+	var errorText = '';
+	try {
+		// See if the XHR responseText is actually a JSONified object
+		var responseObject = $.parseJSON( xhr.responseText );
+		if ( ( 'undefined' !== typeof responseObject.data.errorText ) ) {
+			errorText = responseObject.data.errorText;
+		}
+	} catch ( e ) {
+		// Not JSON - use the responseText directly
+		// e.g. this occurs if you attempt to post the same comment twice - you get
+		// a non JSON error back in the response
+		errorText = xhr.responseText;
+	}
+
+	o2.Notifications.add( {
+		model: model,
+		type: 'error',
+		text: errorText,
+		sticky: true
+	} );
+
+	// Turn editing back on
+	this.options.isSaving = false;
+	this.options.isEditing = true;
+	this.render();
+
+	o2.Events.doAction( 'post-comment-save.o2' );
+},
+```
+
+---
+
+# [fit] Questions?
 
 ---
 
@@ -144,18 +362,5 @@ Perceived Speed Photo Credit: [Loïc Lagarde](https://www.flickr.com/photos/3255
 
 Instagram screenshots: [https://speakerdeck.com/mikeyk/secrets-to-lightning-fast-mobile-design](https://speakerdeck.com/mikeyk/secrets-to-lightning-fast-mobile-design)
 
----
-
-![fit left](instagram_optimistic_1.png)
-
-![fit right](instagram_optimistic_2.png)
-
-^ Slides from Mike Krieger in 2011 presentation titled "Secrets to Lightning Fast Mobile Design"
-
----
-
-![fit](instagram_optimistic_3.png)
-
----
-
+^
 Arguably one of the most important user interface metrics is speed – Or, more importantly, perceived speed. While much can be done to speed up a user interface by beefing up servers and minimizing the weight of resources, optimistically processing interactions can greatly increase the perceived speed of your website. This talk will discuss real-life use cases of optimistic programming in apps you use, as well as a few ways to use optimistic programming on your WordPress website.
