@@ -49,21 +49,21 @@ BA in Computer Science at MSU
 
 ---
 
-![autoplay loop](p2_mercury_new_post.mov)
+![autoplay loop fit](p2_mercury_new_post.mov)
 
 ---
 
-![autoplay loop](o2_new_post.mov)
-
----
-
-# Which is Faster?
+![autoplay loop fit](o2_new_post.mov)
 
 ---
 
 ![autoplay left loop fit](p2_mercury_new_post.mov)
 
 ![autoplay right loop fit](o2_new_post.mov)
+
+---
+
+# Which is Faster?
 
 ---
 
@@ -125,7 +125,7 @@ BA in Computer Science at MSU
 
 ---
 
-![autoplay](jetpack_inifinite_scroll.mov)
+![autoplay fit](jetpack_inifinite_scroll.mov)
 
 ---
 
