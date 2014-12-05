@@ -8,6 +8,10 @@
 
 ---
 
+# [fit] wcorl2014.ericbinnion.com
+
+---
+
 ![right](profile_crop.jpg)
 
 # Eric Binnion
